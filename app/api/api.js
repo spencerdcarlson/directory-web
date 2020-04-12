@@ -2,17 +2,14 @@ import js_cookie from 'js-cookie'
 
 const host = 'http://localhost:4000';
 
-const get_csrf = () => {
-    const name = 'csrf';
-    const token = encodeURIComponent(js_cookie.get(name));
-    js_cookie.remove(name);
-    // const token = encodeURIComponent(Array.from(document.getElementsByTagName('meta'))
-    //     .find(node => node.name == 'csrf-token').content);
+const csrf_cookie = ({key = 'csrf'} = {}) => {
+    const token = encodeURIComponent(js_cookie.get(key));
+    js_cookie.remove(key);
     return token;
 };
 
-const csrf = () => {
-  return get({url: '/api/ds/csrf'})
+const user_uid = () => {
+    return get({url: '/api/ds/user/uid'})
 };
 
 const get = ({url = null} = {}) => {
@@ -21,14 +18,27 @@ const get = ({url = null} = {}) => {
         .then(handle_body)
 };
 
-const post = ({url = null, data = {}} = {}) => {
-    return fetch(url, {
-        credentials: 'include',
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers:{
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': get_csrf()
+const csrf = () => {
+    return get({url: '/api/ds/csrf'})
+};
+
+const post = ({ url = null, data = {} } = {}) => {
+    // Notes on CSRF via API - https://bit.ly/39Vo27m
+    csrf().then(({ csrf: token = null } = {}) => {
+        if (token) {
+            return fetch(url, {
+                credentials: "include", // this determines when to send cookies (include means to send them, even if its not samesite (like when we proxy in local dev)
+                mode: "cors",
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": token
+                }
+            });
+        }
+        else {
+            throw new HTTPException({code: 400, message: 'Could not fetch CSRF token before POST request.'})
         }
     }).then(handle_errors).then(handle_body);
 };
@@ -73,7 +83,6 @@ export default {
     host,
     get,
     post,
-    csrf
+    csrf,
+    user_uid,
 }
-
-// export { default as auth } from './auth'

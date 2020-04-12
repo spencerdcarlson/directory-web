@@ -1,6 +1,6 @@
 import api from './api'
 const logout = () => {
-    return api.post({url: `${api.host}/auth/logout`});
+    return api.post({url: `${api.host}/api/ds/logout`});
 };
 
 const login = () => {
