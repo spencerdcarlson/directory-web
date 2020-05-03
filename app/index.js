@@ -3,19 +3,19 @@ import ReactDOM from 'react-dom';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider } from '@material-ui/styles';
 import theme from './theme'
-import Home from './components/Home'
+import App from './components/App'
 import { UserProvider, reducer, initialState} from "./context/user";
 
-const App = () => {
+const Dom = () => {
   const props = { initialState, reducer };
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
           <UserProvider { ...props} >
-            <Home />
+            <App />
           </UserProvider>
       </ThemeProvider>
     );
 };
 
-ReactDOM.render(<App />, document.getElementById('app'))
+ReactDOM.render(<Dom />, document.getElementById('app'))
